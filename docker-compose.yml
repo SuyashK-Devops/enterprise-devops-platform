@@ -1,0 +1,133 @@
+services:
+
+  frontend:
+    build:
+      context: ./app/frontend
+    container_name: enterprise-frontend
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+      
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+        reservations:
+          memory: 128M
+
+    depends_on:
+      user-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+    networks:
+      - enterprise-network
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    labels:
+      project: enterprise-devops-platform
+      component: frontend
+
+
+  user-service:
+    build:
+      context: ./app/user-service
+    container_name: enterprise-user-service
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+        reservations:
+          memory: 256M
+
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      SERVICE_VERSION: ${USER_SERVICE_VERSION}
+
+    networks:
+      - enterprise-network
+
+    healthcheck:
+      test:
+        [ 
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    labels:
+      project: enterprise-devops-platform
+      component: user-service
+
+
+  product-service:
+    build:
+      context: ./app/product-service
+    container_name: enterprise-product-service
+    expose:
+      - "8001"
+    restart: unless-stopped
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+        reservations:
+          memory: 256M
+
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      SERVICE_VERSION: ${PRODUCT_SERVICE_VERSION}
+
+    networks:
+      - enterprise-network
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    labels:
+      project: enterprise-devops-platform
+      component: product-service
+
+networks:
+  enterprise-network:
+    driver: bridge

@@ -35,3 +35,9 @@ htmlcov/
 
 # Kubernetes
 *.kubeconfig
+
+# Docker
+.docker/
+
+# IDE
+.idea/

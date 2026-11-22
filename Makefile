@@ -1,11 +1,20 @@
-setup:
-	@echo "Setup will be added in future phases"
+up:
+	docker compose up -d
 
-run:
-	@echo "Run commands will be added in future phases"
+down:
+	docker compose down
 
-test:
-	@echo "Tests will be be added in future phases"
+build:
+	docker compose build
+
+restart:
+	docker compose restart
+
+logs:
+	docker compose logs -f
+
+status:
+	docker compose ps
 
 clean:
-	@echo "Cleanup commands will be added in future phases"
+	docker compose down -v
